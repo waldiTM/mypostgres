@@ -57,9 +57,9 @@ class MysqlLexer:
     def keyword(self, keyword):
         return SqlKeyword[keyword.upper()]
 
-    @syntax.add(r'[a-z]+')
-    def id(self, id):
-        return id.lower()
+    @syntax.add(r'[a-z_]+')
+    def bare_id(self, bare_id):
+        return bare_id.lower()
 
     @syntax.add(r'''[-+*/=()]''')
     def operator(self, operator):
@@ -81,9 +81,9 @@ class MysqlLexer:
     def whitespace(self, whitespace):
         return None
 
-    @syntax.add('.')
+    @syntax.add('.+?')
     def rest(self, rest):
-        raise RuntimeError
+        return rest
 
     _re = syntax.compile()
 
