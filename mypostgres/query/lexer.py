@@ -50,7 +50,7 @@ class Syntax:
         return re.compile('|'.join(self.rules), re.I | re.X)
 
 
-class SqlLexer:
+class MysqlLexer:
     syntax = Syntax()
 
     @syntax.add('|'.join(SqlKeyword.__members__))
@@ -95,6 +95,6 @@ class SqlLexer:
         return ret
 
 
-class SqlLexerMysqlTraditional(SqlLexer):
-    string_id = SqlLexer.string
-    string_back = SqlLexer.string_id
+class MysqlLexerTraditional(MysqlLexer):
+    string_id = MysqlLexer.string
+    string_back = MysqlLexer.string_id

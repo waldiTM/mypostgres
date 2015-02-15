@@ -1,9 +1,9 @@
-from .lexer import SqlLexer, SqlKeyword, SqlString
+from .lexer import MysqlLexer, SqlKeyword, SqlString
 
 
-class TestSqlLexer:
+class TestMysqlLexer:
     def test_keyword(self):
-        l = SqlLexer()
+        l = MysqlLexer()
 
         i = l('INSERT')[0]
         assert i == SqlKeyword.INSERT
@@ -13,7 +13,7 @@ class TestSqlLexer:
         assert i == SqlKeyword.INSERT
 
     def test_string(self):
-        l = SqlLexer()
+        l = MysqlLexer()
 
         i = l(r"'test'")[0]
         assert i == "test"
@@ -23,7 +23,7 @@ class TestSqlLexer:
         assert i == "te'st"
 
     def test_whitespace(self):
-        l = SqlLexer()
+        l = MysqlLexer()
 
         i = l(" ")
         assert i == [None]
