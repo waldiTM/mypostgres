@@ -17,6 +17,24 @@ class Query:
         pass
 
     def SHOW(self, query, lex):
+        if len(lex) == 3 and lex[1] is None:
+            obj = lex[2]
+            if obj == 'databases':
+                return """
+                    SELECT n.nspname AS database FROM pg_catalog.pg_namespace n
+                        WHERE n.nspname !~ '^pg_'
+                        ORDER BY 1
+                """
+            if obj == 'tables':
+                return """
+                    SELECT c.relname AS tables
+                        FROM pg_catalog.pg_class c
+                            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+                        WHERE c.relkind IN ('r', 'v', 'm', 'f')
+                            AND n.nspname !~ '^pg_'
+                            AND pg_catalog.pg_table_is_visible(c.oid)
+                        ORDER by 1
+                """
         pass
 
     lexer = MysqlLexer()
