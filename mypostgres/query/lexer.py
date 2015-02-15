@@ -22,6 +22,17 @@ class SqlKeyword(Enum):
     RENAME = "rename"
     TRUNCATE = "truncate"
 
+    def __sql__(self):
+        return self.name
+
+
+class SqlString(str):
+    def __new__(cls, t):
+        return super().__new__(cls, t)
+
+    def __sql__(self):
+        return "'" + self.replace("'", "''") + "'"
+
 
 class Syntax:
     __slots__ = 'rules'
@@ -56,7 +67,7 @@ class SqlLexer:
 
     @syntax.add(r''' (?: '.*?(?<!\\)' )+ ''')
     def string(self, string):
-        return string.strip("'").replace("''", "'").replace(r"\'", "'")
+        return SqlString(string.strip("'").replace("''", "'").replace(r"\'", "'"))
 
     @syntax.add(r''' (?: ".*?(?<!\\)" )+ ''')
     def string_id(self, text):

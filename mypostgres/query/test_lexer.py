@@ -1,4 +1,4 @@
-from .lexer import SqlLexer, SqlKeyword
+from .lexer import SqlLexer, SqlKeyword, SqlString
 
 
 class TestSqlLexer:
@@ -33,3 +33,10 @@ class TestSqlLexer:
         assert i == [None]
         i = l("  ")
         assert i == [None]
+
+
+def test_SqlString():
+    t = SqlString("test")
+    assert t.__sql__() == "'test'"
+    t = SqlString("te'st")
+    assert t.__sql__() == "'te''st'"
