@@ -34,6 +34,14 @@ class SqlString(str):
         return "'" + self.replace("'", "''") + "'"
 
 
+class SqlParameter(str):
+    def __new__(cls, t):
+        return super().__new__(cls, t)
+
+    def __sql__(self):
+        raise RuntimeError
+
+
 class Syntax:
     __slots__ = 'rules'
 
@@ -57,8 +65,10 @@ class MysqlLexer:
     def keyword(self, keyword):
         return SqlKeyword[keyword.upper()]
 
-    @syntax.add(r'[a-z_]+')
-    def bare_id(self, bare_id):
+    @syntax.add(r'(?P<parameter>@@)?[a-z_]+')
+    def bare_id(self, bare_id, parameter=None):
+        if parameter:
+            return SqlParameter(bare_id)
         return bare_id.lower()
 
     @syntax.add(r'''[-+*/=()]''')
