@@ -4,11 +4,14 @@ from mysqlproto.protocol.base import OK, ERR, EOF
 from mysqlproto.protocol.query import ColumnDefinition, ColumnDefinitionList, ResultSet
 from mysqlproto.server import MysqlServer
 
+from .query import Query
+
 
 class ServerPsycopg2(MysqlServer):
     def __init__(self, reader, writer, dsn):
         super().__init__(reader, writer)
         self.dsn = dsn
+        self.query_rewrite = Query(self)
 
     def connection_made(self):
         self.conn = psycopg2.connect('')
@@ -20,13 +23,9 @@ class ServerPsycopg2(MysqlServer):
         query = (yield from packet.read()).decode('ascii')
         print("<=   query:", query)
 
-        if query.startswith('show'):
-            return OK(self.capability, self.status)
+        ret = self.query_rewrite(query)
 
-        elif query.startswith('set'):
-            return ERR(self.capability)
-
-        elif not '@@' in query:
+        if isinstance(ret, str):
             curs = self.conn.cursor()
             curs.execute(query)
 
