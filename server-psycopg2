@@ -1,0 +1,14 @@
+#!/usr/bin/python3
+
+import asyncio
+import logging
+
+from mypostgres.server import ServerPsycopg2
+from mysqlproto.protocol import start_mysql_server
+
+logging.basicConfig(level=logging.INFO)
+
+loop = asyncio.get_event_loop()
+f = start_mysql_server(ServerPsycopg2.factory(''), host=None, port=3306)
+loop.run_until_complete(f)
+loop.run_forever()
