@@ -23,11 +23,11 @@ class ServerPsycopg2(MysqlServer):
         query = (yield from packet.read()).decode('ascii')
         print("<=   query:", query)
 
-        ret = self.query_rewrite(query)
+        query_new = self.query_rewrite(query)
 
-        if isinstance(ret, str):
+        if isinstance(query_new, str):
             curs = self.conn.cursor()
-            curs.execute(query)
+            curs.execute(query_new)
 
             cd = ColumnDefinitionList()
             for d in curs.description:
