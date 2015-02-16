@@ -1,4 +1,4 @@
-from .lexer import MysqlLexer, SqlKeyword, SqlParameter
+from .lexer import MysqlLexerTraditional, SqlKeyword, SqlParameter
 
 
 class Query:
@@ -25,7 +25,7 @@ class Query:
                         WHERE n.nspname !~ '^pg_'
                         ORDER BY 1
                 """
-            if obj == 'tables':
+            elif obj == 'tables':
                 return """
                     SELECT c.relname AS tables
                         FROM pg_catalog.pg_class c
@@ -37,7 +37,7 @@ class Query:
                 """
         pass
 
-    lexer = MysqlLexer()
+    lexer = MysqlLexerTraditional()
 
     def __init__(self, server):
         self.server = server

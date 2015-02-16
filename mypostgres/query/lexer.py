@@ -30,6 +30,9 @@ class SqlString(str):
     def __new__(cls, t):
         return super().__new__(cls, t)
 
+    def __repr__(self):
+        return "<{}: '{}'>".format(self.__class__.__name__, self)
+
     def __sql__(self):
         return "'" + self.replace("'", "''") + "'"
 
@@ -37,6 +40,9 @@ class SqlString(str):
 class SqlParameter(str):
     def __new__(cls, t):
         return super().__new__(cls, t)
+
+    def __repr__(self):
+        return "<{}: '{}'>".format(self.__class__.__name__, self)
 
     def __sql__(self):
         raise RuntimeError
@@ -80,11 +86,11 @@ class MysqlLexer:
         return SqlString(string.strip("'").replace("''", "'").replace(r"\'", "'"))
 
     @syntax.add(r''' (?: ".*?(?<!\\)" )+ ''')
-    def string_id(self, text):
-        raise NotImplementedError
+    def string_id(self, string_id):
+        return string_id.strip('"')
 
     @syntax.add(r''' (?: `.*?(?<!\\)` )+ ''')
-    def string_back(self, text):
+    def string_back(self, string_back):
         raise NotImplementedError
 
     @syntax.add('\s+')
@@ -106,5 +112,5 @@ class MysqlLexer:
 
 
 class MysqlLexerTraditional(MysqlLexer):
-    string_id = MysqlLexer.string
-    string_back = MysqlLexer.string_id
+    def string_back(self, string_back):
+        return string_back.strip('`')
