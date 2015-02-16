@@ -97,7 +97,7 @@ class MysqlLexer:
         bare_id = bare_id.lower()
         return getattr(SqlKeyword, bare_id, SqlName(bare_id))
 
-    @syntax.add(r'''[-+*/=()]''')
+    @syntax.add(r'''[-+*/=]''')
     def operator(self, operator):
         return SqlUnknown(operator)
 
@@ -113,11 +113,7 @@ class MysqlLexer:
     def string_back(self, string_back):
         raise NotImplementedError
 
-    @syntax.add('\s+')
-    def whitespace(self, whitespace):
-        return None
-
-    @syntax.add('.+?')
+    @syntax.add('\S+?')
     def rest(self, rest):
         return SqlUnknown(rest)
 

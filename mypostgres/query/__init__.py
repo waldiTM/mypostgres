@@ -1,4 +1,4 @@
-from .lexer import MysqlLexerTraditional, SqlKeyword, SqlParameter
+from .lexer import MysqlLexerTraditional, SqlKeyword, SqlParameter, SqlUnknown
 
 
 class Query:
@@ -8,7 +8,7 @@ class Query:
         for i in lex:
             if isinstance(i, SqlParameter):
                 if i == '@@version_comment':
-                    i = 'version() as "@@version_comment"'
+                    i = SqlUnknown('version() as "@@version_comment"')
             ret.append(i)
         print(ret)
         return self.unlex(ret)
@@ -17,8 +17,8 @@ class Query:
         pass
 
     def SHOW(self, query, lex):
-        if len(lex) == 3 and lex[1] is None:
-            obj = lex[2]
+        if len(lex) == 2:
+            obj = lex[1]
             if obj == 'databases':
                 return """
                     SELECT n.nspname AS database FROM pg_catalog.pg_namespace n
@@ -49,8 +49,6 @@ class Query:
     def unlex(self, lex):
         ret = []
         for i in lex:
-            if i is None:
-                ret.append(' ')
-            else:
-                ret.append(i.__sql__())
+            ret.append(i.__sql__())
+            ret.append(' ')
         return ''.join(ret)
