@@ -110,7 +110,7 @@ class MysqlLexer:
 
     @syntax.add(r''' (?: ".*?(?<!\\)" )+ ''')
     def string_id(self, string_id):
-        return SqlName(string_id.strip('"'))
+        return SqlName(string_id)
 
     @syntax.add(r''' (?: `.*?(?<!\\)` )+ ''')
     def string_back(self, string_back):
@@ -139,4 +139,4 @@ class MysqlLexerTraditional(MysqlLexer):
         return SqlString(string_id.strip('"'))
 
     def string_back(self, string_back):
-        return SqlName(string_back.strip('`'))
+        return SqlName(string_back.replace('`', '"'))
