@@ -26,7 +26,7 @@ class SqlKeyword(Enum):
         return self.name
 
 
-class SqlString(str):
+class SqlName(str):
     def __new__(cls, t):
         return super().__new__(cls, t)
 
@@ -34,7 +34,8 @@ class SqlString(str):
         return "<{}: '{}'>".format(self.__class__.__name__, self)
 
     def __sql__(self):
-        return "'" + self.replace("'", "''") + "'"
+        # XXX
+        return self
 
 
 class SqlParameter(str):
@@ -46,6 +47,28 @@ class SqlParameter(str):
 
     def __sql__(self):
         raise RuntimeError
+
+
+class SqlString(str):
+    def __new__(cls, t):
+        return super().__new__(cls, t)
+
+    def __repr__(self):
+        return "<{}: '{}'>".format(self.__class__.__name__, self)
+
+    def __sql__(self):
+        return "'" + self.replace("'", "''") + "'"
+
+
+class SqlUnknown(str):
+    def __new__(cls, t):
+        return super().__new__(cls, t)
+
+    def __repr__(self):
+        return "<{}: '{}'>".format(self.__class__.__name__, self)
+
+    def __sql__(self):
+        return self
 
 
 class Syntax:
@@ -75,11 +98,11 @@ class MysqlLexer:
     def bare_id(self, bare_id, parameter=None):
         if parameter:
             return SqlParameter(bare_id)
-        return bare_id.lower()
+        return SqlName(bare_id.lower())
 
     @syntax.add(r'''[-+*/=()]''')
     def operator(self, operator):
-        return operator
+        return SqlUnknown(operator)
 
     @syntax.add(r''' (?: '.*?(?<!\\)' )+ ''')
     def string(self, string):
@@ -87,7 +110,7 @@ class MysqlLexer:
 
     @syntax.add(r''' (?: ".*?(?<!\\)" )+ ''')
     def string_id(self, string_id):
-        return string_id.strip('"')
+        return SqlName(string_id.strip('"'))
 
     @syntax.add(r''' (?: `.*?(?<!\\)` )+ ''')
     def string_back(self, string_back):
@@ -99,7 +122,7 @@ class MysqlLexer:
 
     @syntax.add('.+?')
     def rest(self, rest):
-        return rest
+        return SqlUnknown(rest)
 
     _re = syntax.compile()
 
@@ -112,5 +135,8 @@ class MysqlLexer:
 
 
 class MysqlLexerTraditional(MysqlLexer):
+    def string_id(self, string_id):
+        return SqlString(string_id.strip('"'))
+
     def string_back(self, string_back):
-        return string_back.strip('`')
+        return SqlName(string_back.strip('`'))

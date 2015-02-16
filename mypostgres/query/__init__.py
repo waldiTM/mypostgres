@@ -49,9 +49,7 @@ class Query:
     def unlex(self, lex):
         ret = []
         for i in lex:
-            if isinstance(i, str):
-                ret.append(i)
-            elif i is None:
+            if i is None:
                 ret.append(' ')
             else:
                 ret.append(i.__sql__())

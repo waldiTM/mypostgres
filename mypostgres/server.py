@@ -24,6 +24,7 @@ class ServerPsycopg2(MysqlServer):
         print("<=   query:", query)
 
         query_new = self.query_rewrite(query)
+        print("<=   query:", query_new)
 
         if isinstance(query_new, str):
             curs = self.conn.cursor()
