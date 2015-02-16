@@ -44,7 +44,7 @@ class Query:
 
     def __call__(self, query):
         lex = self.lexer(query)
-        return getattr(self, lex[0].name)(query, lex)
+        return getattr(self, lex[0].value)(query, lex)
 
     def unlex(self, lex):
         ret = []

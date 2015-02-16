@@ -3,24 +3,24 @@ import re
 
 
 class SqlKeyword(Enum):
-    DELETE = "delete"
-    INSERT = "insert"
-    SELECT = "select"
-    REPLACE = "replace"
-    UPDATE = "update"
+    delete = "DELETE"
+    insert = "INSERT"
+    select = "SELECT"
+    replace = "REPLACE"
+    update = "UPDATE"
 
-    BEGIN = "begin"
-    COMMIT = "commit"
-    ROLLBACK = "rollback"
+    begin = "BEGIN"
+    commit = "COMMIT"
+    rollback = "ROLLBACK"
 
-    SET = "set"
-    SHOW = "show"
+    set = "SET"
+    show = "SHOW"
 
-    ALTER = "alter"
-    CREATE = "create"
-    DROP = "drop"
-    RENAME = "rename"
-    TRUNCATE = "truncate"
+    alter = "ALTER"
+    create = "CREATE"
+    drop = "DROP"
+    rename = "RENANE"
+    truncate = "TRUNCATE"
 
     def __sql__(self):
         return self.name
@@ -90,15 +90,12 @@ class Syntax:
 class MysqlLexer:
     syntax = Syntax()
 
-    @syntax.add('|'.join(SqlKeyword.__members__))
-    def keyword(self, keyword):
-        return SqlKeyword[keyword.upper()]
-
-    @syntax.add(r'(?P<parameter>@@)?[a-z_]+')
+    @syntax.add(r' (?P<parameter>@@)? [a-z_]+ ')
     def bare_id(self, bare_id, parameter=None):
         if parameter:
             return SqlParameter(bare_id)
-        return SqlName(bare_id.lower())
+        bare_id = bare_id.lower()
+        return getattr(SqlKeyword, bare_id, SqlName(bare_id))
 
     @syntax.add(r'''[-+*/=()]''')
     def operator(self, operator):
