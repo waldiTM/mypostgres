@@ -37,6 +37,12 @@ class Query:
                 """
         pass
 
+    def CREATE(self, query, lex):
+        return self.unlex(lex)
+
+    def DROP(self, query, lex):
+        return self.unlex(lex)
+
     lexer = MysqlLexerTraditional()
 
     def __init__(self, server):
