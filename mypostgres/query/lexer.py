@@ -20,6 +20,7 @@ class SqlKeyword(Enum):
     DROP = "DROP"
     EXPLAIN = "EXPLAIN"
     INSERT = "INSERT"
+    KEY = "KEY"
     LOCK = "LOCK"
     NOT = "NOT"
     NULL = "NULL"

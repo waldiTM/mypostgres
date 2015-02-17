@@ -54,10 +54,13 @@ class Query:
             for i in lex:
                 if isinstance(i, SqlParenthesis):
                     d = i.__class__()
-                    for w, last in self.split_list(i, ','):
+                    for w in self.split_list(i, ','):
                         print(w)
                         if isinstance(w[0], SqlKeyword):
-                            d.extend(w)
+                            if w[0] in ('primary', ):
+                                if d:
+                                    d.append(SqlUnknown(','))
+                                d.extend(w)
                         else:
                             col_name = w.pop(0)
                             col_type = w.pop(0)
@@ -78,11 +81,10 @@ class Query:
                                     w.pop(0)
                                 else:
                                     o.append(i)
+                            if d:
+                                d.append(SqlUnknown(','))
                             d.extend((col_name, col_type))
                             d.extend(o)
-
-                        if not last:
-                            d.append(SqlUnknown(','))
                     ret.append(d)
                     break
                 else:
@@ -115,8 +117,8 @@ class Query:
         while True:
             try:
                 i = l.index(sep, cur)
-                yield l[cur:i], False
+                yield l[cur:i]
                 cur = i + 1
             except ValueError:
-                yield l[cur:end], True
+                yield l[cur:end]
                 break
