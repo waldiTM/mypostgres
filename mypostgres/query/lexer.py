@@ -104,6 +104,16 @@ class Syntax:
 class MysqlLexer:
     syntax = Syntax()
 
+    @syntax.add(r' \( ')
+    def parenthesis_open(self, stack, parenthesis_open):
+        p = SqlParenthesis()
+        stack[-1].append(p)
+        stack.append(p)
+
+    @syntax.add(r' \) ')
+    def parenthesis_close(self, stack, parenthesis_close):
+        stack.pop()
+
     @syntax.add(r' (?P<parameter>@@)? [a-z0-9_.]+ ')
     def bare_id(self, stack, bare_id, parameter=None):
         bare_id = bare_id.lower()
