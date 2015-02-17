@@ -20,6 +20,7 @@ class SqlKeyword(Enum):
     DROP = "DROP"
     EXPLAIN = "EXPLAIN"
     INSERT = "INSERT"
+    LOCK = "LOCK"
     NOT = "NOT"
     NULL = "NULL"
     PRIMARY = "PRIMARY"
@@ -30,6 +31,7 @@ class SqlKeyword(Enum):
     SET = "SET"
     SHOW = "SHOW"
     TRUNCATE = "TRUNCATE"
+    UNLOCK = "UNLOCK"
     UPDATE = "UPDATE"
 
     def __sql__(self):

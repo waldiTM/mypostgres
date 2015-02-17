@@ -93,6 +93,12 @@ class Query:
     def DROP(self, query, lex):
         return lex.__sql__()
 
+    def LOCK(self, query, lex):
+        pass
+
+    def UNLOCK(self, query, lex):
+        pass
+
     lexer = MysqlLexerTraditional()
 
     def __init__(self, server):
