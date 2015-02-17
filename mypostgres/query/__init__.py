@@ -117,7 +117,8 @@ class Query:
 
     def __call__(self, query):
         lex = self.lexer(query)
-        return getattr(self, lex[0].value)(query, lex)
+        if lex:
+            return getattr(self, lex[0].value)(query, lex)
 
     @staticmethod
     def split_list(l, sep):
