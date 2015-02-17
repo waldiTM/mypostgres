@@ -31,18 +31,22 @@ class ServerPsycopg2(MysqlServer):
             curs = self.conn.cursor()
             curs.execute(query_new)
 
-            cd = ColumnDefinitionList()
-            for d in curs.description:
-                cd.columns.append(ColumnDefinition(d.name))
-            cd.write(self.writer)
-            EOF(self.capability, self.status).write(self.writer)
+            if curs.description:
+                cd = ColumnDefinitionList()
+                for d in curs.description:
+                    cd.columns.append(ColumnDefinition(d.name))
+                cd.write(self.writer)
+                EOF(self.capability, self.status).write(self.writer)
 
-            while True:
-                i = curs.fetchone()
-                if not i:
-                    break
-                ResultSet(i).write(self.writer)
-            return EOF(self.capability, self.status)
+                while True:
+                    i = curs.fetchone()
+                    if not i:
+                        break
+                    ResultSet(i).write(self.writer)
+                return EOF(self.capability, self.status)
+
+            else:
+                return OK(self.capability, self.status, info=curs.statusmessage)
 
         else:
             return ERR(self.capability)
