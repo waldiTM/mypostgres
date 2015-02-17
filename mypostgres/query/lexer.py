@@ -90,7 +90,7 @@ class Syntax:
 class MysqlLexer:
     syntax = Syntax()
 
-    @syntax.add(r' (?P<parameter>@@)? [a-z_]+ ')
+    @syntax.add(r' (?P<parameter>@@)? [a-z0-9_.]+ ')
     def bare_id(self, bare_id, parameter=None):
         if parameter:
             return SqlParameter(bare_id)
