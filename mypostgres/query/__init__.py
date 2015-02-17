@@ -1,4 +1,4 @@
-from .lexer import MysqlLexerTraditional, SqlKeyword, SqlParameter, SqlUnknown
+from .lexer import MysqlLexerTraditional, SqlQuery, SqlKeyword, SqlName, SqlParameter, SqlParenthesis, SqlUnknown
 
 
 class Query:
@@ -38,8 +38,48 @@ class Query:
         pass
 
     def CREATE(self, query, lex):
+        ret = lex.__class__()
         print(lex)
-        return lex.__sql__()
+
+        if lex[1] == 'table':
+            for i in lex:
+                if isinstance(i, SqlParenthesis):
+                    d = i.__class__()
+                    for w, last in self.split_list(i, ','):
+                        print(w)
+                        if isinstance(w[0], SqlKeyword):
+                            d.extend(w)
+                        else:
+                            col_name = w.pop(0)
+                            col_type = w.pop(0)
+                            if col_type in ('int', ):
+                                col_type = SqlName('integer')
+                            elif col_type in ('enum', ):
+                                col_type = SqlName('text')
+
+                            if isinstance(w[0], SqlParenthesis):
+                                w.pop(0)
+
+                            o = []
+                            while w:
+                                i = w.pop(0)
+                                if i == 'auto_increment':
+                                    col_type = SqlName('serial')
+                                elif i == 'collate':
+                                    w.pop(0)
+                                else:
+                                    o.append(i)
+                            d.extend((col_name, col_type))
+                            d.extend(o)
+
+                        if not last:
+                            d.append(SqlUnknown(','))
+                    ret.append(d)
+                    break
+                else:
+                    ret.append(i)
+        print(ret)
+        return ret.__sql__()
 
     def DROP(self, query, lex):
         return lex.__sql__()
@@ -52,3 +92,16 @@ class Query:
     def __call__(self, query):
         lex = self.lexer(query)
         return getattr(self, lex[0].value)(query, lex)
+
+    @staticmethod
+    def split_list(l, sep):
+        cur = 0
+        end = len(l)
+        while True:
+            try:
+                i = l.index(sep, cur)
+                yield l[cur:i], False
+                cur = i + 1
+            except ValueError:
+                yield l[cur:end], True
+                break
