@@ -12,24 +12,21 @@ class SqlQuery(list):
 
 
 class SqlKeyword(Enum):
-    DELETE = "DELETE"
-    INSERT = "INSERT"
-    SELECT = "SELECT"
-    REPLACE = "REPLACE"
-    UPDATE = "UPDATE"
-
+    ALTER = "ALTER"
     BEGIN = "BEGIN"
     COMMIT = "COMMIT"
+    CREATE = "CREATE"
+    DELETE = "DELETE"
+    DROP = "DROP"
+    INSERT = "INSERT"
+    RENAME = "RENANE"
+    REPLACE = "REPLACE"
     ROLLBACK = "ROLLBACK"
-
+    SELECT = "SELECT"
     SET = "SET"
     SHOW = "SHOW"
-
-    ALTER = "ALTER"
-    CREATE = "CREATE"
-    DROP = "DROP"
-    RENAME = "RENANE"
     TRUNCATE = "TRUNCATE"
+    UPDATE = "UPDATE"
 
     def __sql__(self):
         return self.name
