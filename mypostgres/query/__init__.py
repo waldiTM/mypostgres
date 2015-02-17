@@ -2,6 +2,12 @@ from .lexer import MysqlLexerTraditional, SqlQuery, SqlKeyword, SqlName, SqlPara
 
 
 class Query:
+    def DELETE(self, query, lex):
+        return lex.__sql__()
+
+    def INSERT(self, query, lex):
+        return lex.__sql__()
+
     def SELECT(self, query, lex):
         ret = lex.__class__()
         print(lex)
@@ -12,6 +18,9 @@ class Query:
             ret.append(i)
         print(ret)
         return ret.__sql__()
+
+    def UPDATE(self, query, lex):
+        return lex.__sql__()
 
     def SET(self, query, lex):
         pass
