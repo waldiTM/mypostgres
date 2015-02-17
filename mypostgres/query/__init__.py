@@ -64,12 +64,19 @@ class Query:
                         else:
                             col_name = w.pop(0)
                             col_type = w.pop(0)
-                            if col_type in ('int', ):
-                                col_type = SqlName('integer')
+
+                            if col_type in ('tinyint', ):
+                                col_type = SqlName('smallint')
+                            elif col_type in ('longtext', ):
+                                col_type = SqlName('text')
+                            elif col_type in ('tinyblob', 'longblob', ):
+                                col_type = SqlName('bytea')
+                            elif col_type in ('datetime', ):
+                                col_type = SqlName('timestamp')
                             elif col_type in ('enum', ):
                                 col_type = SqlName('text')
 
-                            if isinstance(w[0], SqlParenthesis):
+                            if w and isinstance(w[0], SqlParenthesis):
                                 w.pop(0)
 
                             o = []
@@ -79,6 +86,8 @@ class Query:
                                     col_type = SqlName('serial')
                                 elif i == 'collate':
                                     w.pop(0)
+                                elif i == 'unsigned':
+                                    pass
                                 else:
                                     o.append(i)
                             if d:
