@@ -12,24 +12,24 @@ class SqlQuery(list):
 
 
 class SqlKeyword(Enum):
-    delete = "DELETE"
-    insert = "INSERT"
-    select = "SELECT"
-    replace = "REPLACE"
-    update = "UPDATE"
+    DELETE = "DELETE"
+    INSERT = "INSERT"
+    SELECT = "SELECT"
+    REPLACE = "REPLACE"
+    UPDATE = "UPDATE"
 
-    begin = "BEGIN"
-    commit = "COMMIT"
-    rollback = "ROLLBACK"
+    BEGIN = "BEGIN"
+    COMMIT = "COMMIT"
+    ROLLBACK = "ROLLBACK"
 
-    set = "SET"
-    show = "SHOW"
+    SET = "SET"
+    SHOW = "SHOW"
 
-    alter = "ALTER"
-    create = "CREATE"
-    drop = "DROP"
-    rename = "RENANE"
-    truncate = "TRUNCATE"
+    ALTER = "ALTER"
+    CREATE = "CREATE"
+    DROP = "DROP"
+    RENAME = "RENANE"
+    TRUNCATE = "TRUNCATE"
 
     def __sql__(self):
         return self.name
@@ -116,11 +116,12 @@ class MysqlLexer:
 
     @syntax.add(r' (?P<parameter>@@)? [a-z0-9_.]+ ')
     def bare_id(self, stack, bare_id, parameter=None):
-        bare_id = bare_id.lower()
         if parameter:
             r = SqlParameter(bare_id)
         else:
-            r = getattr(SqlKeyword, bare_id, SqlName(bare_id))
+            r = getattr(SqlKeyword, bare_id.upper(), None)
+        if not r:
+            r = SqlName(bare_id.lower())
         stack[-1].append(r)
 
     @syntax.add(r'''[-+*/=]''')
