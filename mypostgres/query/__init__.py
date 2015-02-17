@@ -3,7 +3,7 @@ from .lexer import MysqlLexerTraditional, SqlKeyword, SqlParameter, SqlUnknown
 
 class Query:
     def SELECT(self, query, lex):
-        ret = []
+        ret = lex.__class__()
         print(lex)
         for i in lex:
             if isinstance(i, SqlParameter):
@@ -11,7 +11,7 @@ class Query:
                     i = SqlUnknown('version() as "@@version_comment"')
             ret.append(i)
         print(ret)
-        return self.unlex(ret)
+        return ret.__sql__()
 
     def SET(self, query, lex):
         pass
@@ -38,10 +38,11 @@ class Query:
         pass
 
     def CREATE(self, query, lex):
-        return self.unlex(lex)
+        print(lex)
+        return lex.__sql__()
 
     def DROP(self, query, lex):
-        return self.unlex(lex)
+        return lex.__sql__()
 
     lexer = MysqlLexerTraditional()
 
@@ -51,10 +52,3 @@ class Query:
     def __call__(self, query):
         lex = self.lexer(query)
         return getattr(self, lex[0].value)(query, lex)
-
-    def unlex(self, lex):
-        ret = []
-        for i in lex:
-            ret.append(i.__sql__())
-            ret.append(' ')
-        return ''.join(ret)

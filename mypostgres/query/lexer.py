@@ -2,6 +2,15 @@ from enum import Enum
 import re
 
 
+class SqlQuery(list):
+    def __repr__(self):
+        return "<{}: {}>".format(self.__class__.__name__, list.__repr__(self))
+
+    def __sql__(self):
+        return ' '.join((i.__sql__() for i in self))
+
+
+
 class SqlKeyword(Enum):
     delete = "DELETE"
     insert = "INSERT"
@@ -49,6 +58,11 @@ class SqlParameter(str):
         raise RuntimeError
 
 
+class SqlParenthesis(SqlQuery):
+    def __sql__(self):
+        return '(' + super().__sql__() + ')'
+
+
 class SqlString(str):
     def __new__(cls, t):
         return super().__new__(cls, t)
@@ -91,45 +105,47 @@ class MysqlLexer:
     syntax = Syntax()
 
     @syntax.add(r' (?P<parameter>@@)? [a-z0-9_.]+ ')
-    def bare_id(self, bare_id, parameter=None):
-        if parameter:
-            return SqlParameter(bare_id)
+    def bare_id(self, stack, bare_id, parameter=None):
         bare_id = bare_id.lower()
-        return getattr(SqlKeyword, bare_id, SqlName(bare_id))
+        if parameter:
+            r = SqlParameter(bare_id)
+        else:
+            r = getattr(SqlKeyword, bare_id, SqlName(bare_id))
+        stack[-1].append(r)
 
     @syntax.add(r'''[-+*/=]''')
-    def operator(self, operator):
-        return SqlUnknown(operator)
+    def operator(self, stack, operator):
+        stack[-1].append(SqlUnknown(operator))
 
     @syntax.add(r''' (?: '.*?(?<!\\)' )+ ''')
-    def string(self, string):
-        return SqlString(string.strip("'").replace("''", "'").replace(r"\'", "'"))
+    def string(self, stack, string):
+        stack[-1].append(SqlString(string.strip("'").replace("''", "'").replace(r"\'", "'")))
 
     @syntax.add(r''' (?: ".*?(?<!\\)" )+ ''')
-    def string_id(self, string_id):
-        return SqlName(string_id)
+    def string_id(self, stack, string_id):
+        stack[-1].append(SqlName(string_id))
 
     @syntax.add(r''' (?: `.*?(?<!\\)` )+ ''')
-    def string_back(self, string_back):
+    def string_back(self, stack, string_back):
         raise NotImplementedError
 
     @syntax.add('\S+?')
-    def rest(self, rest):
-        return SqlUnknown(rest)
+    def rest(self, stack, rest):
+        stack[-1].append(SqlUnknown(rest))
 
     _re = syntax.compile()
 
     def __call__(self, text):
-        ret = []
+        stack = [SqlQuery()]
         for match in self._re.finditer(text):
             data = dict(((str(k), v) for k, v in match.groupdict().items() if v is not None))
-            ret.append(getattr(self, match.lastgroup)(**data))
-        return ret
+            getattr(self, match.lastgroup)(stack, **data)
+        return stack[0]
 
 
 class MysqlLexerTraditional(MysqlLexer):
-    def string_id(self, string_id):
-        return SqlString(string_id.strip('"'))
+    def string_id(self, stack, string_id):
+        stack[-1].append(SqlString(string_id.strip('"')))
 
-    def string_back(self, string_back):
-        return SqlName(string_back.replace('`', '"'))
+    def string_back(self, stack, string_back):
+        stack[-1].append(SqlName(string_back.replace('`', '"')))
