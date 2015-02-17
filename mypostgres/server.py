@@ -15,6 +15,7 @@ class ServerPsycopg2(MysqlServer):
 
     def connection_made(self):
         self.conn = psycopg2.connect('')
+        self.conn.autocommit = True
 
     def connection_lost(self, exc):
         self.conn.close()
