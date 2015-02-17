@@ -49,4 +49,4 @@ class ServerPsycopg2(MysqlServer):
                 return OK(self.capability, self.status, info=curs.statusmessage)
 
         else:
-            return ERR(self.capability)
+            return OK(self.capability, self.status)
