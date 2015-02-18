@@ -51,7 +51,7 @@ class Query:
     def CREATE(self, query, lex):
         found = None
         for i in range(len(lex)):
-            if lex[i] in (SqlKeyword.TABLE, ):
+            if lex[i] in (SqlKeyword.TABLE, SqlKeyword.VIEW):
                 leader = lex[1:i-1]
                 found = lex[i]
                 follow = lex[i+1:]
@@ -110,6 +110,10 @@ class Query:
                     break
                 else:
                     ret.append(i)
+
+        elif found == SqlKeyword.VIEW:
+            ret.extend(follow)
+
         print("rewritten:", ret)
         return ret.__sql__()
 
