@@ -48,31 +48,31 @@ class Query:
     def CREATE(self, query, lex):
         ret = lex.__class__()
 
-        if lex[1] == 'table':
+        if lex[1] == b'table':
             for i in lex:
                 if isinstance(i, SqlParenthesis):
                     d = i.__class__()
-                    for w in self.split_list(i, ','):
+                    for w in self.split_list(i, b','):
                         print(w)
                         if isinstance(w[0], SqlKeyword):
-                            if w[0] in ('primary', ):
+                            if w[0] in (b'primary', ):
                                 if d:
-                                    d.append(SqlUnknown(','))
+                                    d.append(SqlUnknown(b','))
                                 d.extend(w)
                         else:
                             col_name = w.pop(0)
                             col_type = w.pop(0)
 
-                            if col_type in ('tinyint', ):
-                                col_type = SqlName('smallint')
-                            elif col_type in ('longtext', ):
-                                col_type = SqlName('text')
-                            elif col_type in ('tinyblob', 'longblob', ):
-                                col_type = SqlName('bytea')
-                            elif col_type in ('datetime', ):
-                                col_type = SqlName('timestamp')
-                            elif col_type in ('enum', ):
-                                col_type = SqlName('text')
+                            if col_type in (b'tinyint', ):
+                                col_type = SqlName(b'smallint')
+                            elif col_type in (b'longtext', ):
+                                col_type = SqlName(b'text')
+                            elif col_type in (b'tinyblob', b'longblob', ):
+                                col_type = SqlName(b'bytea')
+                            elif col_type in (b'datetime', ):
+                                col_type = SqlName(b'timestamp')
+                            elif col_type in (b'enum', ):
+                                col_type = SqlName(b'text')
 
                             if w and isinstance(w[0], SqlParenthesis):
                                 w.pop(0)
@@ -80,23 +80,23 @@ class Query:
                             o = []
                             while w:
                                 i = w.pop(0)
-                                if i == 'auto_increment':
-                                    col_type = SqlName('serial')
-                                elif i == 'collate':
+                                if i == b'auto_increment':
+                                    col_type = SqlName(b'serial')
+                                elif i == b'collate':
                                     w.pop(0)
-                                elif i == 'unsigned':
+                                elif i == b'unsigned':
                                     pass
                                 else:
                                     o.append(i)
                             if d:
-                                d.append(SqlUnknown(','))
+                                d.append(SqlUnknown(b','))
                             d.extend((col_name, col_type))
                             d.extend(o)
                     ret.append(d)
                     break
                 else:
                     ret.append(i)
-        print(ret)
+        print("rewritten:", ret)
         return ret.__sql__()
 
     def DROP(self, query, lex):

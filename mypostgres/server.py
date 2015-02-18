@@ -27,7 +27,7 @@ class ServerPsycopg2(MysqlServer):
         query_new = self.query_rewrite(query)
         print("<=   query:", query_new and query_new.decode('utf-8', 'replace'))
 
-        if isinstance(query_new, str):
+        if isinstance(query_new, bytes):
             curs = self.conn.cursor()
             curs.execute(query_new)
 
