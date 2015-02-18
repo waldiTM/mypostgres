@@ -9,13 +9,7 @@ class Query:
         return lex.__sql__()
 
     def SELECT(self, query, lex):
-        ret = lex.__class__()
-        for i in lex:
-            if isinstance(i, SqlParameter):
-                if i == '@@version_comment':
-                    i = SqlUnknown('version() as "@@version_comment"')
-            ret.append(i)
-        print(ret)
+        ret = self.rewrite_SELECT(lex)
         return ret.__sql__()
 
     def UPDATE(self, query, lex):
@@ -69,7 +63,7 @@ class Query:
                     ret.append(self.rewrite_CREATE_TABLE_def(i))
 
         elif found == SqlKeyword.VIEW:
-            ret.extend(follow)
+            ret.extend(self.rewrite_SELECT(follow))
 
         print("rewritten:", ret)
         return ret.__sql__()
@@ -82,6 +76,15 @@ class Query:
 
     def UNLOCK(self, query, lex):
         pass
+
+    def rewrite_SELECT(self, lex):
+        ret = lex.__class__()
+        for i in lex:
+            if isinstance(i, SqlParameter):
+                if i == '@@version_comment':
+                    i = SqlUnknown('version() as "@@version_comment"')
+            ret.append(i)
+        return ret
 
     def rewrite_CREATE_TABLE_def(self, lex):
         d = lex.__class__()
