@@ -22,6 +22,7 @@ class SqlKeyword(Enum):
     DELETE = "DELETE"
     DROP = "DROP"
     EXPLAIN = "EXPLAIN"
+    FROM = "FROM"
     HAVING = "HAVING"
     INSERT = "INSERT"
     KEY = "KEY"

@@ -79,18 +79,11 @@ class Query:
 
     def rewrite_SELECT(self, lex):
         ret = lex.__class__()
+        self.rewrite_SELECT_output(lex, ret)
         while lex:
             i = lex.pop(0)
-            if isinstance(i, SqlParameter):
-                if i == '@@version_comment':
-                    i = SqlUnknown('version() as "@@version_comment"')
             ret.append(i)
-            if i == SqlKeyword.CAST:
-                j = lex.pop(0)
-                if isinstance(j, SqlParenthesis):
-                    j = self.rewrite_SELECT_CAST(j)
-                ret.append(j)
-            elif i in (SqlKeyword.WHERE, SqlKeyword.HAVING):
+            if i in (SqlKeyword.WHERE, SqlKeyword.HAVING):
                 d = SqlParenthesis()
                 ret.append(d)
                 ret.append(SqlUnknown(b'::bool'))
@@ -99,15 +92,48 @@ class Query:
                 d.append(lex.pop(0))
         return ret
 
-    def rewrite_SELECT_CAST(self, lex):
-        ret = lex.__class__()
+    def rewrite_SELECT_output(self, lex, out):
         while lex:
             i = lex.pop(0)
-            if i == b'charset':
-                lex.pop(0)
-                continue
-            ret.append(i)
-        return ret
+            if i == SqlKeyword.FROM:
+                out.append(i)
+                break
+
+            elif isinstance(i, SqlParameter):
+                if i == '@@version_comment':
+                    i = SqlUnknown('version() as "@@version_comment"')
+                out.append(i)
+
+            elif isinstance(i, SqlParenthesis):
+                l = i.__class__()
+                self.rewrite_SELECT_output(i, l)
+                out.append(l)
+
+            elif i == SqlKeyword.CAST:
+                out.append(i)
+                j = lex.pop(0)
+                if isinstance(j, SqlParenthesis):
+                    l = j.__class__()
+                    try:
+                        k = j.index(b'charset')
+                        j = j[:k]
+                    except ValueError:
+                        pass
+                    self.rewrite_SELECT_output(j, l)
+                    out.append(l)
+
+            elif i == b'convert':
+                j = lex.pop(0)
+                if isinstance(j, SqlParenthesis):
+                    try:
+                        k = j.index(b'using')
+                        j = j[:k]
+                    except ValueError:
+                        pass
+                    self.rewrite_SELECT_output(j, out)
+
+            else:
+                out.append(i)
 
     def rewrite_CREATE_TABLE_def(self, lex):
         d = lex.__class__()
