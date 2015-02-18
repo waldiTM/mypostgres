@@ -10,7 +10,6 @@ class Query:
 
     def SELECT(self, query, lex):
         ret = lex.__class__()
-        print(lex)
         for i in lex:
             if isinstance(i, SqlParameter):
                 if i == '@@version_comment':
@@ -48,7 +47,6 @@ class Query:
 
     def CREATE(self, query, lex):
         ret = lex.__class__()
-        print(lex)
 
         if lex[1] == 'table':
             for i in lex:
@@ -118,6 +116,7 @@ class Query:
     def __call__(self, query):
         lex = self.lexer(query)
         if lex:
+            print(lex)
             return getattr(self, lex[0].value)(query, lex)
 
     @staticmethod
