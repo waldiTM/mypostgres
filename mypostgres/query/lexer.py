@@ -120,9 +120,13 @@ class Syntax:
 class MysqlLexer:
     syntax = Syntax()
 
-    @syntax.add(r' /\*.*?\*/ ')
-    def comment(self, stack, comment):
-        pass
+    @syntax.add(r' /\* ')
+    def comment_open(self, stack, comment_open):
+        stack.append([])
+
+    @syntax.add(r' \*/ ')
+    def comment_close(self, stack, comment_close):
+        stack.pop()
 
     @syntax.add(r' \( ')
     def parenthesis_open(self, stack, parenthesis_open):
