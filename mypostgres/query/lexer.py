@@ -120,6 +120,10 @@ class Syntax:
 class MysqlLexer:
     syntax = Syntax()
 
+    @syntax.add(r' /\*\!\d{5} ')
+    def comment_open_mysqlversion(self, stack, comment_open_mysqlversion):
+        stack.append(stack[-1])
+
     @syntax.add(r' /\* ')
     def comment_open(self, stack, comment_open):
         stack.append([])
