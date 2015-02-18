@@ -87,7 +87,7 @@ class SqlStringUnknown(bytes):
         return "<{}: '{}'>".format(self.__class__.__name__, self)
 
     def __sql__(self):
-        return br"E'\x" + codecs.encode(self, 'hex') + b"'"
+        return br"E'\\x" + codecs.encode(self, 'hex') + b"'"
 
 
 class SqlUnknown(bytes):
