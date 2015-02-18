@@ -49,10 +49,21 @@ class Query:
         pass
 
     def CREATE(self, query, lex):
-        ret = lex.__class__()
+        found = None
+        for i in range(len(lex)):
+            if lex[i] in (SqlKeyword.TABLE, ):
+                leader = lex[1:i-1]
+                found = lex[i]
+                follow = lex[i+1:]
+                break
 
-        if lex[1] == b'table':
-            for i in lex:
+        if not found:
+            return
+
+        ret = lex.__class__((lex[0], found))
+
+        if found == SqlKeyword.TABLE:
+            for i in follow:
                 if isinstance(i, SqlParenthesis):
                     d = i.__class__()
                     for w in self.split_list(i, b','):
