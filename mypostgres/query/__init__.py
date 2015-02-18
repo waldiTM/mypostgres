@@ -122,7 +122,7 @@ class Query:
                     self.rewrite_SELECT_output(j, l)
                     out.append(l)
 
-            elif i == b'coalesce':
+            elif i == SqlKeyword.COALESCE:
                 out.append(i)
                 j = lex.pop(0)
                 if isinstance(j, SqlParenthesis):
@@ -178,7 +178,7 @@ class Query:
                     i = w.pop(0)
                     if i == b'auto_increment':
                         col_type = SqlName(b'serial')
-                    elif i == b'collate':
+                    elif i == SqlKeyword.COLLATE:
                         w.pop(0)
                     elif i == b'unsigned':
                         pass

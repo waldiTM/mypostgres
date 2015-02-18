@@ -17,6 +17,8 @@ class SqlKeyword(Enum):
     AS = "AS"
     BEGIN = "BEGIN"
     CAST = "CAST"
+    COALESCE = "COALESCE"
+    COLLATE = "COLLATE"
     COMMIT = "COMMIT"
     CREATE = "CREATE"
     DELETE = "DELETE"
