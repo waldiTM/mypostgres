@@ -122,6 +122,18 @@ class Query:
                     self.rewrite_SELECT_output(j, l)
                     out.append(l)
 
+            elif i == b'coalesce':
+                out.append(i)
+                j = lex.pop(0)
+                if isinstance(j, SqlParenthesis):
+                    l = j.__class__()
+                    out.append(l)
+                    for w in self.split_list(j, b','):
+                        if l:
+                            l.append(SqlUnknown(b','))
+                        self.rewrite_SELECT_output(w, l)
+                        l.append(SqlUnknown(b'::text'))
+
             elif i == b'convert':
                 j = lex.pop(0)
                 if isinstance(j, SqlParenthesis):
