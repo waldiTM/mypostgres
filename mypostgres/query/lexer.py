@@ -7,7 +7,7 @@ class SqlQuery(list):
         return "<{}: {}>".format(self.__class__.__name__, list.__repr__(self))
 
     def __sql__(self):
-        return ' '.join((i.__sql__() for i in self))
+        return b' '.join((i.__sql__() for i in self))
 
 
 
@@ -36,10 +36,10 @@ class SqlKeyword(Enum):
     UPDATE = "UPDATE"
 
     def __sql__(self):
-        return self.name
+        return self.name.encode('ascii')
 
 
-class SqlName(str):
+class SqlName(bytes):
     def __new__(cls, t):
         return super().__new__(cls, t)
 
@@ -51,7 +51,7 @@ class SqlName(str):
         return self
 
 
-class SqlParameter(str):
+class SqlParameter(bytes):
     def __new__(cls, t):
         return super().__new__(cls, t)
 
@@ -64,7 +64,7 @@ class SqlParameter(str):
 
 class SqlParenthesis(SqlQuery):
     def __sql__(self):
-        return '(' + super().__sql__() + ')'
+        return b'(' + super().__sql__() + b')'
 
 
 class SqlString(str):
@@ -75,10 +75,10 @@ class SqlString(str):
         return "<{}: '{}'>".format(self.__class__.__name__, self)
 
     def __sql__(self):
-        return "'" + self.replace("'", "''") + "'"
+        return b"'" + self.encode('utf-8').replace(b"'", b"''") + b"'"
 
 
-class SqlUnknown(str):
+class SqlUnknown(bytes):
     def __new__(cls, t):
         return super().__new__(cls, t)
 
@@ -97,12 +97,12 @@ class Syntax:
 
     def add(self, rule):
         def decorator(f):
-            self.rules.append('(?P<{}>{})'.format(f.__name__, rule))
+            self.rules.append('(?P<{}>{})'.format(f.__name__, rule).encode('ascii'))
             return f
         return decorator
 
     def compile(self):
-        return re.compile('|'.join(self.rules), re.I | re.X)
+        return re.compile(b'|'.join(self.rules), re.I | re.X)
 
 
 class MysqlLexer:
@@ -127,7 +127,7 @@ class MysqlLexer:
         if parameter:
             r = SqlParameter(bare_id)
         else:
-            r = getattr(SqlKeyword, bare_id.upper(), None)
+            r = getattr(SqlKeyword, bare_id.upper().decode('ascii'), None)
         if not r:
             r = SqlName(bare_id.lower())
         stack[-1].append(r)
@@ -138,7 +138,7 @@ class MysqlLexer:
 
     @syntax.add(r''' (?: '.*?(?<!\\)' )+ ''')
     def string(self, stack, string):
-        stack[-1].append(SqlString(string.strip("'").replace("''", "'").replace(r"\'", "'")))
+        stack[-1].append(SqlString(string.decode('utf-8').strip("'").replace("''", "'").replace(r"\'", "'")))
 
     @syntax.add(r''' (?: ".*?(?<!\\)" )+ ''')
     def string_id(self, stack, string_id):
@@ -158,13 +158,13 @@ class MysqlLexer:
         stack = [SqlQuery()]
         for match in self._re.finditer(text):
             data = dict(((str(k), v) for k, v in match.groupdict().items() if v is not None))
-            getattr(self, match.lastgroup)(stack, **data)
+            getattr(self, str(match.lastgroup))(stack, **data)
         return stack[0]
 
 
 class MysqlLexerTraditional(MysqlLexer):
     def string_id(self, stack, string_id):
-        stack[-1].append(SqlString(string_id.strip('"')))
+        stack[-1].append(SqlString(string_id.decode('utf-8').strip('"')))
 
     def string_back(self, stack, string_back):
-        stack[-1].append(SqlName(string_back.replace('`', '"')))
+        stack[-1].append(SqlName(string_back.replace(b'`', b'"')))

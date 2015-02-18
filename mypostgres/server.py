@@ -21,11 +21,11 @@ class ServerPsycopg2(MysqlServer):
         self.conn.close()
 
     def query(self, packet):
-        query = (yield from packet.read()).decode('ascii')
-        print("<=   query:", query)
+        query = (yield from packet.read())
+        print("<=   query:", query.decode('utf-8', 'replace'))
 
         query_new = self.query_rewrite(query)
-        print("<=   query:", query_new)
+        print("<=   query:", query_new and query_new.decode('utf-8', 'replace'))
 
         if isinstance(query_new, str):
             curs = self.conn.cursor()
