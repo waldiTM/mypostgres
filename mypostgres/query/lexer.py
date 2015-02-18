@@ -22,6 +22,7 @@ class SqlKeyword(Enum):
     DELETE = "DELETE"
     DROP = "DROP"
     EXPLAIN = "EXPLAIN"
+    HAVING = "HAVING"
     INSERT = "INSERT"
     KEY = "KEY"
     LOCK = "LOCK"
@@ -39,6 +40,7 @@ class SqlKeyword(Enum):
     UNLOCK = "UNLOCK"
     UPDATE = "UPDATE"
     VIEW = "VIEW"
+    WHERE = "WHERE"
 
     def __sql__(self):
         return self.name.encode('ascii')

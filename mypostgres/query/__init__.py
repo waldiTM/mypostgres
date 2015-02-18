@@ -90,6 +90,13 @@ class Query:
                 if isinstance(j, SqlParenthesis):
                     j = self.rewrite_SELECT_CAST(j)
                 ret.append(j)
+            elif i in (SqlKeyword.WHERE, SqlKeyword.HAVING):
+                d = SqlParenthesis()
+                ret.append(d)
+                ret.append(SqlUnknown(b'::bool'))
+                if isinstance(lex[0], SqlKeyword):
+                    break
+                d.append(lex.pop(0))
         return ret
 
     def rewrite_SELECT_CAST(self, lex):
