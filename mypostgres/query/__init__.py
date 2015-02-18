@@ -45,6 +45,9 @@ class Query:
                 """
         pass
 
+    def ALTER(self, query, lex):
+        pass
+
     def CREATE(self, query, lex):
         ret = lex.__class__()
 
