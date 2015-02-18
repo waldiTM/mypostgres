@@ -13,12 +13,16 @@ class ServerPsycopg2(MysqlServer):
         self.dsn = dsn
         self.query_rewrite = Query(self)
 
-    def connection_made(self):
+    def connection_made(self, user, schema):
+        # XXX: user
         self.conn = psycopg2.connect('')
         self.conn.autocommit = True
+        self.schema_change(schema)
+        yield
 
     def connection_lost(self, exc):
         self.conn.close()
+        yield
 
     def query(self, packet):
         query = (yield from packet.read())
@@ -50,3 +54,7 @@ class ServerPsycopg2(MysqlServer):
 
         else:
             return OK(self.capability, self.status)
+
+    def schema_change(self, schema):
+        curs = self.conn.cursor()
+        curs.execute('set search_path to "{}",mysql_support'.format(schema))
