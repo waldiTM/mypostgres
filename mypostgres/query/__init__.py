@@ -81,7 +81,7 @@ class Query:
                                 col_type = SqlName(b'smallint')
                             elif col_type in (b'longtext', ):
                                 col_type = SqlName(b'text')
-                            elif col_type in (b'tinyblob', b'longblob', ):
+                            elif col_type in (b'tinyblob', b'longblob', b'blob'):
                                 col_type = SqlName(b'bytea')
                             elif col_type in (b'datetime', ):
                                 col_type = SqlName(b'timestamp')
