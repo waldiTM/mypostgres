@@ -100,8 +100,8 @@ class Query:
                 break
 
             elif isinstance(i, SqlParameter):
-                if i == '@@version_comment':
-                    i = SqlUnknown('version() as "@@version_comment"')
+                if i == b'@@version_comment':
+                    i = SqlUnknown(b'version() as "@@version_comment"')
                 out.append(i)
 
             elif isinstance(i, SqlParenthesis):
