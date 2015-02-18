@@ -32,9 +32,11 @@ class SqlKeyword(Enum):
     SELECT = "SELECT"
     SET = "SET"
     SHOW = "SHOW"
+    TABLE = "TABLE"
     TRUNCATE = "TRUNCATE"
     UNLOCK = "UNLOCK"
     UPDATE = "UPDATE"
+    VIEW = "VIEW"
 
     def __sql__(self):
         return self.name.encode('ascii')
