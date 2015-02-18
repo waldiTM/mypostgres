@@ -54,62 +54,19 @@ class Query:
             if lex[i] in (SqlKeyword.TABLE, SqlKeyword.VIEW):
                 leader = lex[1:i-1]
                 found = lex[i]
-                follow = lex[i+1:]
+                name = lex[i+1]
+                follow = lex[i+2:]
                 break
 
         if not found:
             return
 
-        ret = lex.__class__((lex[0], found))
+        ret = lex.__class__((lex[0], found, name))
 
         if found == SqlKeyword.TABLE:
             for i in follow:
                 if isinstance(i, SqlParenthesis):
-                    d = i.__class__()
-                    for w in self.split_list(i, b','):
-                        print(w)
-                        if isinstance(w[0], SqlKeyword):
-                            if w[0] in (b'primary', ):
-                                if d:
-                                    d.append(SqlUnknown(b','))
-                                d.extend(w)
-                        else:
-                            col_name = w.pop(0)
-                            col_type = w.pop(0)
-
-                            if col_type in (b'tinyint', ):
-                                col_type = SqlName(b'smallint')
-                            elif col_type in (b'longtext', ):
-                                col_type = SqlName(b'text')
-                            elif col_type in (b'tinyblob', b'longblob', b'blob'):
-                                col_type = SqlName(b'bytea')
-                            elif col_type in (b'datetime', ):
-                                col_type = SqlName(b'timestamp')
-                            elif col_type in (b'enum', ):
-                                col_type = SqlName(b'text')
-
-                            if w and isinstance(w[0], SqlParenthesis):
-                                w.pop(0)
-
-                            o = []
-                            while w:
-                                i = w.pop(0)
-                                if i == b'auto_increment':
-                                    col_type = SqlName(b'serial')
-                                elif i == b'collate':
-                                    w.pop(0)
-                                elif i == b'unsigned':
-                                    pass
-                                else:
-                                    o.append(i)
-                            if d:
-                                d.append(SqlUnknown(b','))
-                            d.extend((col_name, col_type))
-                            d.extend(o)
-                    ret.append(d)
-                    break
-                else:
-                    ret.append(i)
+                    ret.append(self.rewrite_CREATE_TABLE_def(i))
 
         elif found == SqlKeyword.VIEW:
             ret.extend(follow)
@@ -125,6 +82,49 @@ class Query:
 
     def UNLOCK(self, query, lex):
         pass
+
+    def rewrite_CREATE_TABLE_def(self, lex):
+        d = lex.__class__()
+        for w in self.split_list(lex, b','):
+            if isinstance(w[0], SqlKeyword):
+                if w[0] in (b'primary', ):
+                    if d:
+                        d.append(SqlUnknown(b','))
+                    d.extend(w)
+            else:
+                col_name = w.pop(0)
+                col_type = w.pop(0)
+
+                if col_type in (b'tinyint', ):
+                    col_type = SqlName(b'smallint')
+                elif col_type in (b'longtext', ):
+                    col_type = SqlName(b'text')
+                elif col_type in (b'tinyblob', b'longblob', b'blob'):
+                    col_type = SqlName(b'bytea')
+                elif col_type in (b'datetime', ):
+                    col_type = SqlName(b'timestamp')
+                elif col_type in (b'enum', ):
+                    col_type = SqlName(b'text')
+
+                if w and isinstance(w[0], SqlParenthesis):
+                    w.pop(0)
+
+                o = []
+                while w:
+                    i = w.pop(0)
+                    if i == b'auto_increment':
+                        col_type = SqlName(b'serial')
+                    elif i == b'collate':
+                        w.pop(0)
+                    elif i == b'unsigned':
+                        pass
+                    else:
+                        o.append(i)
+                if d:
+                    d.append(SqlUnknown(b','))
+                d.extend((col_name, col_type))
+                d.extend(o)
+        return d
 
     lexer = MysqlLexerTraditional()
 
