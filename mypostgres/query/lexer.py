@@ -1,3 +1,4 @@
+import codecs
 from enum import Enum
 import re
 
@@ -78,6 +79,17 @@ class SqlString(str):
         return b"'" + self.encode('utf-8').replace(b"'", b"''") + b"'"
 
 
+class SqlStringUnknown(bytes):
+    def __new__(cls, t):
+        return super().__new__(cls, t)
+
+    def __repr__(self):
+        return "<{}: '{}'>".format(self.__class__.__name__, self)
+
+    def __sql__(self):
+        return br"E'\x" + codecs.encode(self, 'hex') + b"'"
+
+
 class SqlUnknown(bytes):
     def __new__(cls, t):
         return super().__new__(cls, t)
@@ -138,7 +150,12 @@ class MysqlLexer:
 
     @syntax.add(r''' (?: '.*?(?<!\\)' )+ ''')
     def string(self, stack, string):
-        stack[-1].append(SqlString(string.decode('utf-8').strip("'").replace("''", "'").replace(r"\'", "'")))
+        r = string.strip(b"'").replace(b"''", b"'").replace(br"\'", b"'")
+        try:
+            r = SqlString(r.decode('utf-8'))
+        except UnicodeDecodeError:
+            r = SqlStringUnknown(r)
+        stack[-1].append(r)
 
     @syntax.add(r''' (?: ".*?(?<!\\)" )+ ''')
     def string_id(self, stack, string_id):

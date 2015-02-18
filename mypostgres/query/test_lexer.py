@@ -37,6 +37,6 @@ class TestMysqlLexer:
 
 def test_SqlString():
     t = SqlString("test")
-    assert t.__sql__() == "'test'"
+    assert t.__sql__() == b"'test'"
     t = SqlString("te'st")
-    assert t.__sql__() == "'te''st'"
+    assert t.__sql__() == b"'te''st'"
