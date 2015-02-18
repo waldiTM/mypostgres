@@ -14,7 +14,9 @@ class SqlQuery(list):
 
 class SqlKeyword(Enum):
     ALTER = "ALTER"
+    AS = "AS"
     BEGIN = "BEGIN"
+    CAST = "CAST"
     COMMIT = "COMMIT"
     CREATE = "CREATE"
     DELETE = "DELETE"

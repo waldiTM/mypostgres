@@ -79,10 +79,26 @@ class Query:
 
     def rewrite_SELECT(self, lex):
         ret = lex.__class__()
-        for i in lex:
+        while lex:
+            i = lex.pop(0)
             if isinstance(i, SqlParameter):
                 if i == '@@version_comment':
                     i = SqlUnknown('version() as "@@version_comment"')
+            ret.append(i)
+            if i == SqlKeyword.CAST:
+                j = lex.pop(0)
+                if isinstance(j, SqlParenthesis):
+                    j = self.rewrite_SELECT_CAST(j)
+                ret.append(j)
+        return ret
+
+    def rewrite_SELECT_CAST(self, lex):
+        ret = lex.__class__()
+        while lex:
+            i = lex.pop(0)
+            if i == b'charset':
+                lex.pop(0)
+                continue
             ret.append(i)
         return ret
 
