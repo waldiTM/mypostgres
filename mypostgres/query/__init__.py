@@ -93,9 +93,10 @@ class Query:
                 d = SqlParenthesis()
                 ret.append(d)
                 ret.append(SqlUnknown(b'::bool'))
-                if isinstance(lex[0], SqlKeyword):
-                    break
-                d.append(lex.pop(0))
+                while lex:
+                    if lex[0] in (SqlKeyword.WHERE, SqlKeyword.HAVING, SqlKeyword.ORDER, SqlKeyword.GROUP, SqlKeyword.FOR):
+                        break
+                    d.append(lex.pop(0))
         return ret
 
     def rewrite_SELECT_output(self, lex, out):
