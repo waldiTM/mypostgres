@@ -61,17 +61,6 @@ class SqlName(bytes):
         return self
 
 
-class SqlParameter(bytes):
-    def __new__(cls, t):
-        return super().__new__(cls, t)
-
-    def __repr__(self):
-        return "<{}: '{}'>".format(self.__class__.__name__, self)
-
-    def __sql__(self):
-        raise RuntimeError
-
-
 class SqlParenthesis(SqlQuery):
     def __sql__(self):
         return b'(' + super().__sql__() + b')'
@@ -108,6 +97,30 @@ class SqlUnknown(bytes):
 
     def __sql__(self):
         return self
+
+
+class SqlVarSystem(bytes):
+    def __new__(cls, t, c):
+        r = super().__new__(cls, t)
+        r.context = c
+        return r
+
+    def __repr__(self):
+        return "<{}: {} ({})>".format(self.__class__.__name__, self, self.context)
+
+    def __sql__(self):
+        raise RuntimeError
+
+
+class SqlVarUser(bytes):
+    def __new__(cls, t):
+        return super().__new__(cls, t)
+
+    def __repr__(self):
+        return "<{}: '{}'>".format(self.__class__.__name__, self)
+
+    def __sql__(self):
+        raise RuntimeError
 
 
 class Syntax:
@@ -150,6 +163,16 @@ class MysqlLexer:
     @syntax.add(r' \) ')
     def parenthesis_close(self, stack, parenthesis_close):
         stack.pop()
+
+    @syntax.add(r' @@ ([a-z0-9_]+\.)? (?P<var_system_name> [a-z0-9_]+ ) ')
+    def var_system(self, stack, var_system, var_system_name):
+        r = SqlVarSystem(var_system_name, var_system)
+        stack[-1].append(r)
+
+    @syntax.add(r' @ (?P<var_user_name> [a-z0-9_]+ ) ')
+    def var_user(self, stack, var_user, var_user_name):
+        r = SqlVarUser(var_user_name)
+        stack[-1].append(r)
 
     @syntax.add(r' (?P<parameter>@@)? [a-z0-9_.]+ ')
     def bare_id(self, stack, bare_id, parameter=None):

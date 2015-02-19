@@ -1,4 +1,4 @@
-from .lexer import MysqlLexerTraditional, SqlQuery, SqlKeyword, SqlName, SqlParameter, SqlParenthesis, SqlUnknown
+from .lexer import MysqlLexerTraditional, SqlQuery, SqlKeyword, SqlName, SqlParenthesis, SqlUnknown, SqlVarSystem, SqlVarUser
 
 
 class Query:
@@ -105,10 +105,9 @@ class Query:
                 out.append(i)
                 break
 
-            elif isinstance(i, SqlParameter):
-                if i == b'@@version_comment':
-                    i = SqlUnknown(b'version() as "@@version_comment"')
-                out.append(i)
+            elif isinstance(i, SqlVarSystem):
+                j = SqlUnknown(b'mysql_variable_show(TRUE, \'' + i + b'\') as "' + i.context + b'"')
+                out.append(j)
 
             elif isinstance(i, SqlParenthesis):
                 l = i.__class__()

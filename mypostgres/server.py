@@ -18,6 +18,10 @@ class ServerPsycopg2(MysqlServer):
         self.conn = psycopg2.connect('')
         self.conn.autocommit = True
         self.schema_change(schema)
+
+        with self.conn.cursor() as curs:
+            curs.execute(r'''select mysql_variable_setup()''')
+        self.conn.commit()
         yield
 
     def connection_lost(self, exc):
