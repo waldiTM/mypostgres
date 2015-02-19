@@ -109,6 +109,11 @@ class Query:
                 j = SqlUnknown(b'mysql_variable_show(TRUE, \'' + i + b'\') as "' + i.context + b'"')
                 out.append(j)
 
+            elif isinstance(i, SqlVarUser):
+                # XXX: Can user variables be modified here?
+                j = SqlUnknown(b'mysql_variable_show(FALSE, \'' + i + b'\') as "@' + i + b'"')
+                out.append(j)
+
             elif isinstance(i, SqlParenthesis):
                 l = i.__class__()
                 self.rewrite_SELECT_output(i, l)
