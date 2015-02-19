@@ -15,6 +15,12 @@ class Query:
     def UPDATE(self, query, lex):
         return lex.__sql__()
 
+    def BEGIN(self, query, lex):
+        return lex.__sql__()
+
+    def ROLLBACK(self, query, lex):
+        return lex.__sql__()
+
     def SET(self, query, lex):
         pass
 
