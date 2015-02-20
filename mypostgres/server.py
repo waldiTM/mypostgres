@@ -24,6 +24,7 @@ class ServerPsycopg2(MysqlServer):
 
         with self.conn.cursor() as curs:
             curs.execute(r'''create temporary table mysql_variable (system boolean, key text, value text) on commit preserve rows''')
+            curs.execute(r'''insert into mysql_variable values (TRUE, 'character_set_connection', 'utf8')''')
             curs.execute(r'''insert into mysql_variable values (TRUE, 'version_comment', version())''')
         self.conn.commit()
         yield
