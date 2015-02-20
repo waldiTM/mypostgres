@@ -37,6 +37,19 @@ class Query:
                     ) select name as "Name", location as "Location", command as "Comment" from authors''')
             like_col = SqlName(b'name')
 
+        elif t == SqlKeyword.CREATE:
+            return
+
+        elif t == b'engines':
+            q = SqlUnknown(b'''
+                    with engines(engine, support, comment, transaction, xa, savepoints) as (
+                        values ('PostgreSQL', 'DEFAULT', '', 'YES', 'NO', 'YES'),
+                            ('InnoDB', 'YES', '', 'YES', 'NO', 'YES')
+                    ) select engine as "Engine", support as "Support", comment as "Comment",
+                        transaction as "Transaction", xa as "XA", savepoints as "Savepoints" from engines''')
+            like_col = SqlName(b'name')
+
+
         elif t == b'databases':
             q = SqlUnknown('''
                     with databases(database) as (
@@ -45,11 +58,17 @@ class Query:
             like_col = SqlName(b'database')
 
         elif t == b'tables':
+            if lex[0] == SqlKeyword.FROM:
+                lex.pop(0)
+                schema = lex.pop(0).decode('ascii')
+            else:
+                schema = self.server.schema
+
             q = SqlUnknown('''
                     with tables("tables_in_{0}") as (
                         select table_name from information_schema.tables where table_schema = '{0}' order by 1
-                    ) select "tables_in_{0}" as "Tables_in_{0}" from tables'''.format(self.server.schema).encode('ascii'))
-            like_col = SqlName('"tables_in_{}"'.format(self.server.schema).encode('ascii'))
+                    ) select "tables_in_{0}" as "Tables_in_{0}" from tables'''.format(schema).encode('ascii'))
+            like_col = SqlName('"tables_in_{}"'.format(schema).encode('ascii'))
 
         else:
             raise RuntimeError
