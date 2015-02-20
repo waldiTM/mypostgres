@@ -6,7 +6,14 @@ class Query:
         return lex.__sql__()
 
     def INSERT(self, query, lex):
-        return lex.__sql__()
+        ret = lex.__class__()
+        while lex:
+            i = lex.pop(0)
+            # Drop ON DUPLICATE UPDATE. Need replacement
+            if i == SqlKeyword.ON:
+                break;
+            ret.append(i)
+        return ret.__sql__()
 
     def SELECT(self, query, lex):
         ret = self.rewrite_SELECT(lex)

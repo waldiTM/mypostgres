@@ -30,6 +30,7 @@ class SqlKeyword(Enum):
     GROUP = "GROUP"
     HAVING = "HAVING"
     INDEX = "INDEX"
+    INTO = "INTO"
     INSERT = "INSERT"
     KEY = "KEY"
     LIKE = 'LIKE'
@@ -37,6 +38,7 @@ class SqlKeyword(Enum):
     LOCK = "LOCK"
     NOT = "NOT"
     NULL = "NULL"
+    ON = "ON"
     ORDER = "ORDER"
     PRIMARY = "PRIMARY"
     RENAME = "RENANE"
@@ -51,6 +53,7 @@ class SqlKeyword(Enum):
     UNLOCK = "UNLOCK"
     UNIQUE = "UNIQUE"
     UPDATE = "UPDATE"
+    VALUES = "VALUES"
     VIEW = "VIEW"
     WHERE = "WHERE"
 
