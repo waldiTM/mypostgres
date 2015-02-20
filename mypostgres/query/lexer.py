@@ -197,10 +197,6 @@ class MysqlLexer:
             r = SqlName(bare_id.lower())
         stack[-1].append(r)
 
-    @syntax.add(r'''[-+*/=]''')
-    def operator(self, stack, operator):
-        stack[-1].append(SqlUnknown(operator))
-
     @syntax.add(r''' (?: '.*?(?<!\\)' )+ ''')
     def string(self, stack, string):
         r = string.strip(b"'").replace(b"''", b"'").replace(br"\'", b"'")
@@ -217,6 +213,10 @@ class MysqlLexer:
     @syntax.add(r''' (?: `.*?(?<!\\)` )+ ''')
     def string_back(self, stack, string_back):
         raise NotImplementedError
+
+    @syntax.add(r'''[^ \t\n\r\f\va-zA-Z0-9_'"()]+''')
+    def operator(self, stack, operator):
+        stack[-1].append(SqlUnknown(operator))
 
     @syntax.add('\S+?')
     def rest(self, stack, rest):
