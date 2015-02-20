@@ -97,6 +97,13 @@ class Query:
                     ) select "tables_in_{0}" as "Tables_in_{0}" from tables'''.format(schema).encode('ascii'))
             like_col = SqlName('"tables_in_{}"'.format(schema).encode('ascii'))
 
+        elif t == b'variables':
+            q = SqlUnknown(b'''
+                    with variables(variable_name, value) as (
+                        select key, value from mysql_variable where system is true order by 1
+                    ) select variable_name as "Variable_name", value as "Value" from variables''')
+            like_col = SqlName(b'variable_name')
+
         else:
             raise RuntimeError
 
