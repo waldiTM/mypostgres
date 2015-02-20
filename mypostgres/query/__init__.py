@@ -7,6 +7,9 @@ class Query:
 
     def INSERT(self, query, lex):
         ret = lex.__class__()
+        ret.append(lex.pop(0))
+        if lex[0] == b'ignore':
+            lex.pop(0)
         while lex:
             i = lex.pop(0)
             # Drop ON DUPLICATE UPDATE. Need replacement
@@ -44,6 +47,23 @@ class Query:
                     ) select name as "Name", location as "Location", command as "Comment" from authors''')
             like_col = SqlName(b'name')
 
+        elif t == b'columns':
+            lex.pop(0)
+            table = lex.pop(0).decode('ascii')
+            if lex and lex[0] == SqlKeyword.FROM:
+                lex.pop(0)
+                schema = lex.pop(0).decode('ascii')
+            else:
+                schema = self.server.schema
+
+            q = SqlUnknown('''
+                    with columns(field, type, "Null", key, "Default", extra) as (
+                        select column_name, data_type, is_nullable, '', column_default, ''
+                            from information_schema.columns where table_schema = '{0}' and table_name = '{1}' order by 1
+                    ) select field as "Field", type as "Type", "Null", key as "Key",
+                        "Default", extra as "Extra" from columns'''.format(schema, table).encode('ascii'))
+            like_col = SqlName(b'field')
+
         elif t == SqlKeyword.CREATE:
             return
 
@@ -65,7 +85,7 @@ class Query:
             like_col = SqlName(b'database')
 
         elif t == b'tables':
-            if lex[0] == SqlKeyword.FROM:
+            if lex and lex[0] == SqlKeyword.FROM:
                 lex.pop(0)
                 schema = lex.pop(0).decode('ascii')
             else:
