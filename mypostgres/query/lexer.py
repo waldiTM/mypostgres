@@ -34,6 +34,7 @@ class SqlKeyword(Enum):
     INSERT = "INSERT"
     KEY = "KEY"
     LIKE = 'LIKE'
+    LIMIT = "LIMIT"
     LOCAL = "LOCAL"
     LOCK = "LOCK"
     NOT = "NOT"

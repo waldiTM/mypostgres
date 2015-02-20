@@ -168,7 +168,7 @@ class Query:
                 ret.append(d)
                 ret.append(SqlUnknown(b'::bool'))
                 while lex:
-                    if lex[0] in (SqlKeyword.WHERE, SqlKeyword.HAVING, SqlKeyword.ORDER, SqlKeyword.GROUP, SqlKeyword.FOR):
+                    if lex[0] in (SqlKeyword.WHERE, SqlKeyword.HAVING, SqlKeyword.ORDER, SqlKeyword.GROUP, SqlKeyword.FOR, SqlKeyword.LIMIT):
                         break
                     d.append(lex.pop(0))
         return ret
