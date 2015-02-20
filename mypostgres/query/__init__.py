@@ -243,12 +243,20 @@ class Query:
             else:
                 col_name = w.pop(0)
                 col_type = w.pop(0)
+                o = []
 
-                if col_type in (b'tinyint', ):
+                if col_type in (b'char', b'character') and w and w[0] == 'varying':
+                    col_type = SqlName(b'varchar')
+
+                if col_type in (b'char', b'character', b'varchar') and w and isinstance(w[0], SqlParenthesis):
+                    o.append(w.pop(0))
+                if col_type == b'double' and w and w[0] != b'precision':
+                    col_type = SqlUnknown(b'double precision')
+                elif col_type in (b'tinyint', ):
                     col_type = SqlName(b'smallint')
                 elif col_type in (b'longtext', ):
                     col_type = SqlName(b'text')
-                elif col_type in (b'tinyblob', b'longblob', b'blob'):
+                elif col_type in (b'tinyblob', b'longblob', b'blob', b'binary', b'varbinary'):
                     col_type = SqlName(b'bytea')
                 elif col_type in (b'datetime', ):
                     col_type = SqlName(b'timestamp')
@@ -258,7 +266,6 @@ class Query:
                 if w and isinstance(w[0], SqlParenthesis):
                     w.pop(0)
 
-                o = []
                 while w:
                     i = w.pop(0)
                     if i == b'auto_increment':
