@@ -118,7 +118,6 @@ class Query:
                 ret.extend((SqlKeyword.WHERE, like_col, SqlKeyword.LIKE))
                 ret.extend(lex)
 
-        print(ret)
         return ret.__sql__()
 
     def ALTER(self, query, lex):
@@ -147,7 +146,6 @@ class Query:
         elif found == SqlKeyword.VIEW:
             ret.extend(self.rewrite_SELECT(follow))
 
-        print("rewritten:", ret)
         return ret.__sql__()
 
     def DROP(self, query, lex):
@@ -285,7 +283,6 @@ class Query:
     def __call__(self, query):
         lex = self.lexer(query)
         if lex:
-            print(lex)
             return getattr(self, lex[0].value)(query, lex)
 
     @staticmethod

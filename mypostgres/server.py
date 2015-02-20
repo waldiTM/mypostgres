@@ -1,3 +1,4 @@
+import logging
 import psycopg2
 
 from mysqlproto.protocol.base import OK, ERR, EOF
@@ -5,6 +6,8 @@ from mysqlproto.protocol.query import ColumnDefinition, ColumnDefinitionList, Re
 from mysqlproto.server import MysqlServer
 
 from .query import Query
+
+logger = logging.getLogger(__name__)
 
 
 class ServerPsycopg2(MysqlServer):
@@ -31,14 +34,21 @@ class ServerPsycopg2(MysqlServer):
 
     def query(self, packet):
         query = (yield from packet.read())
-        print("<=   query:", query.decode('utf-8', 'replace'))
 
-        query_new = self.query_rewrite(query)
-        print("<=   query:", query_new and query_new.decode('utf-8', 'replace'))
+        try:
+            query_new = self.query_rewrite(query)
+        except:
+            logger.exception('Failed to rewrite: %s', query.decode('ascii', 'replace'))
+            raise
 
         if isinstance(query_new, bytes):
             curs = self.conn.cursor()
-            curs.execute(query_new)
+            try:
+                curs.execute(query_new)
+            except:
+                logger.exception('Failed to execute: %s', query_new.decode('ascii', 'replace'))
+                logger.info('Was: %s', query.decode('ascii', 'replace'))
+                raise
 
             if curs.description:
                 cd = ColumnDefinitionList()
