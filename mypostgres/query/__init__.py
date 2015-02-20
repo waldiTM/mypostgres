@@ -25,25 +25,48 @@ class Query:
         pass
 
     def SHOW(self, query, lex):
-        if len(lex) == 2:
-            obj = lex[1]
-            if obj == 'databases':
-                return """
-                    SELECT n.nspname AS database FROM pg_catalog.pg_namespace n
-                        WHERE n.nspname !~ '^pg_'
-                        ORDER BY 1
-                """
-            elif obj == 'tables':
-                return """
-                    SELECT c.relname AS tables
-                        FROM pg_catalog.pg_class c
-                            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
-                        WHERE c.relkind IN ('r', 'v', 'm', 'f')
-                            AND n.nspname !~ '^pg_'
-                            AND pg_catalog.pg_table_is_visible(c.oid)
-                        ORDER by 1
-                """
-        pass
+        lex.pop(0)
+        t = lex.pop(0)
+        if t in (SqlKeyword.GLOBAL, SqlKeyword.SESSION, SqlKeyword.LOCAL):
+            t = lex.pop(0)
+
+        if t == b'authors':
+            q = SqlUnknown('''
+                    with authors(name, location, comment) as (
+                        values ('Bastian Blank', '', 'Architecture')
+                    ) select name as "Name", location as "Location", command as "Comment" from authors''')
+            like_col = SqlName(b'name')
+
+        elif t == b'databases':
+            q = SqlUnknown('''
+                    with databases(database) as (
+                        select schema_name from information_schema.schemata where schema_name !~ '^pg_' order by 1
+                    ) select database as "Database" from databases''')
+            like_col = SqlName(b'database')
+
+        elif t == b'tables':
+            q = SqlUnknown('''
+                    with tables("tables_in_{0}") as (
+                        select table_name from information_schema.tables where table_schema = '{0}' order by 1
+                    ) select "tables_in_{0}" as "Tables_in_{0}" from tables'''.format(self.server.schema).encode('ascii'))
+            like_col = SqlName('"tables_in_{}"'.format(self.server.schema).encode('ascii'))
+
+        else:
+            raise RuntimeError
+
+        ret = lex.__class__((q,))
+
+        if lex:
+            t = lex.pop(0)
+            if t == SqlKeyword.WHERE:
+                ret.append(t)
+                ret.extend(lex)
+            elif t == SqlKeyword.LIKE:
+                ret.extend((SqlKeyword.WHERE, like_col, SqlKeyword.LIKE))
+                ret.extend(lex)
+
+        print(ret)
+        return ret.__sql__()
 
     def ALTER(self, query, lex):
         pass

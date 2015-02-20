@@ -63,3 +63,4 @@ class ServerPsycopg2(MysqlServer):
     def schema_change(self, schema):
         curs = self.conn.cursor()
         curs.execute('set search_path to "{}",mysql_support'.format(schema))
+        self.schema = schema

@@ -29,8 +29,10 @@ class SqlKeyword(Enum):
     GLOBAL = "GLOBAL"
     GROUP = "GROUP"
     HAVING = "HAVING"
+    INDEX = "INDEX"
     INSERT = "INSERT"
     KEY = "KEY"
+    LIKE = 'LIKE'
     LOCAL = "LOCAL"
     LOCK = "LOCK"
     NOT = "NOT"
@@ -47,6 +49,7 @@ class SqlKeyword(Enum):
     TABLE = "TABLE"
     TRUNCATE = "TRUNCATE"
     UNLOCK = "UNLOCK"
+    UNIQUE = "UNIQUE"
     UPDATE = "UPDATE"
     VIEW = "VIEW"
     WHERE = "WHERE"
