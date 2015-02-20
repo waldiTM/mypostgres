@@ -10,14 +10,6 @@ CREATE OR REPLACE FUNCTION mysql_support.if(iftest boolean, iftrue character, if
         select case when iftest then iftrue else iffalse end
     $$;
 
-CREATE OR REPLACE FUNCTION mysql_support.mysql_variable_setup() RETURNS void
-    LANGUAGE plpgsql AS $$ 
-        begin
-            create temporary table mysql_variable (system boolean, key text, value text) on commit preserve rows;
-            insert into mysql_variable values (TRUE, 'version_comment', version());
-        end;
-    $$;
-
 CREATE OR REPLACE FUNCTION mysql_support.mysql_variable_show(system_ boolean, key_ text) RETURNS text
     LANGUAGE plpgsql AS $$
         declare

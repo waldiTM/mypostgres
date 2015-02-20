@@ -20,7 +20,8 @@ class ServerPsycopg2(MysqlServer):
         self.schema_change(schema)
 
         with self.conn.cursor() as curs:
-            curs.execute(r'''select mysql_variable_setup()''')
+            curs.execute(r'''create temporary table mysql_variable (system boolean, key text, value text) on commit preserve rows''')
+            curs.execute(r'''insert into mysql_variable values (TRUE, 'version_comment', version())''')
         self.conn.commit()
         yield
 
