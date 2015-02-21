@@ -41,10 +41,10 @@ class Query:
             t = lex.pop(0)
 
         if t == b'authors':
-            q = SqlUnknown('''
+            q = SqlUnknown(b'''
                     with authors(name, location, comment) as (
                         values ('Bastian Blank', '', 'Architecture')
-                    ) select name as "Name", location as "Location", command as "Comment" from authors''')
+                    ) select name as "Name", location as "Location", comment as "Comment" from authors''')
             like_col = SqlName(b'name')
 
         elif t == b'columns':
@@ -78,7 +78,7 @@ class Query:
 
 
         elif t == b'databases':
-            q = SqlUnknown('''
+            q = SqlUnknown(b'''
                     with databases(database) as (
                         select schema_name from information_schema.schemata where schema_name !~ '^pg_' order by 1
                     ) select database as "Database" from databases''')
