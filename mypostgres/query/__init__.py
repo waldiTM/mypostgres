@@ -141,7 +141,12 @@ class Query:
         if found == SqlKeyword.TABLE:
             for i in follow:
                 if isinstance(i, SqlParenthesis):
-                    ret.append(self.rewrite_CREATE_TABLE_def(i))
+                    d = i.__class__()
+                    ret.append(d)
+                    for w in self.split_list(i, b','):
+                        if d:
+                            d.append(SqlUnknown(b','))
+                        self.rewrite_TABLE_def(w, d)
 
         elif found == SqlKeyword.VIEW:
             ret.extend(self.rewrite_SELECT(follow))
@@ -232,55 +237,48 @@ class Query:
             else:
                 out.append(i)
 
-    def rewrite_CREATE_TABLE_def(self, lex):
-        d = lex.__class__()
-        for w in self.split_list(lex, b','):
-            if isinstance(w[0], SqlKeyword):
-                if w[0] in (b'primary', ):
-                    if d:
-                        d.append(SqlUnknown(b','))
-                    d.extend(w)
-            else:
-                col_name = w.pop(0)
-                col_type = w.pop(0)
-                o = []
+    def rewrite_TABLE_def(self, w, d):
+        if isinstance(w[0], SqlKeyword):
+            if w[0] in (b'primary', ):
+                out.extend(w)
+        else:
+            col_name = w.pop(0)
+            col_type = w.pop(0)
+            o = []
 
-                if col_type in (b'char', b'character') and w and w[0] == 'varying':
-                    col_type = SqlName(b'varchar')
+            if col_type in (b'char', b'character') and w and w[0] == 'varying':
+                col_type = SqlName(b'varchar')
 
-                if col_type in (b'char', b'character', b'varchar') and w and isinstance(w[0], SqlParenthesis):
-                    o.append(w.pop(0))
-                if col_type == b'double' and w and w[0] != b'precision':
-                    col_type = SqlUnknown(b'double precision')
-                elif col_type in (b'tinyint', ):
-                    col_type = SqlName(b'smallint')
-                elif col_type in (b'longtext', ):
-                    col_type = SqlName(b'text')
-                elif col_type in (b'tinyblob', b'longblob', b'blob', b'binary', b'varbinary'):
-                    col_type = SqlName(b'bytea')
-                elif col_type in (b'datetime', ):
-                    col_type = SqlName(b'timestamp')
-                elif col_type in (b'enum', ):
-                    col_type = SqlName(b'text')
+            if col_type in (b'char', b'character', b'varchar') and w and isinstance(w[0], SqlParenthesis):
+                o.append(w.pop(0))
+            if col_type == b'double' and w and w[0] != b'precision':
+                col_type = SqlUnknown(b'double precision')
+            elif col_type in (b'tinyint', ):
+                col_type = SqlName(b'smallint')
+            elif col_type in (b'longtext', ):
+                col_type = SqlName(b'text')
+            elif col_type in (b'tinyblob', b'longblob', b'blob', b'binary', b'varbinary'):
+                col_type = SqlName(b'bytea')
+            elif col_type in (b'datetime', ):
+                col_type = SqlName(b'timestamp')
+            elif col_type in (b'enum', ):
+                col_type = SqlName(b'text')
 
-                if w and isinstance(w[0], SqlParenthesis):
+            if w and isinstance(w[0], SqlParenthesis):
+                w.pop(0)
+
+            while w:
+                i = w.pop(0)
+                if i == b'auto_increment':
+                    col_type = SqlName(b'serial')
+                elif i == SqlKeyword.COLLATE:
                     w.pop(0)
-
-                while w:
-                    i = w.pop(0)
-                    if i == b'auto_increment':
-                        col_type = SqlName(b'serial')
-                    elif i == SqlKeyword.COLLATE:
-                        w.pop(0)
-                    elif i == b'unsigned':
-                        pass
-                    else:
-                        o.append(i)
-                if d:
-                    d.append(SqlUnknown(b','))
-                d.extend((col_name, col_type))
-                d.extend(o)
-        return d
+                elif i == b'unsigned':
+                    pass
+                else:
+                    o.append(i)
+            d.extend((col_name, col_type))
+            d.extend(o)
 
     lexer = MysqlLexerTraditional()
 
