@@ -105,7 +105,7 @@ class Query:
             like_col = SqlName(b'variable_name')
 
         else:
-            raise RuntimeError
+            raise NotImplementedError
 
         ret = lex.__class__((q,))
 
@@ -121,35 +121,85 @@ class Query:
         return ret.__sql__()
 
     def ALTER(self, query, lex):
-        pass
+        ret = lex.__class__((lex.pop(0), ))
 
-    def CREATE(self, query, lex):
-        found = None
-        for i in range(len(lex)):
-            if lex[i] in (SqlKeyword.TABLE, SqlKeyword.VIEW):
-                leader = lex[1:i-1]
-                found = lex[i]
-                name = lex[i+1]
-                follow = lex[i+2:]
+        while True:
+            t = lex.pop(0)
+            if t in (SqlKeyword.TABLE, ):
+                ret.append(t)
                 break
 
-        if not found:
-            return
+        else:
+            raise NotImplementedError
 
-        ret = lex.__class__((lex[0], found, name))
+        ret.append(lex.pop(0))
+        if lex[0] == b'.':
+            ret.append(lex.pop(0))
+            ret.append(lex.pop(0))
 
-        if found == SqlKeyword.TABLE:
-            for i in follow:
+        if t is SqlKeyword.TABLE:
+            d = []
+            for w in self.split_list(lex, b','):
+                i = w.pop(0)
+                if i is SqlKeyword.ADD:
+                    e = []
+                    if w[0] is SqlKeyword.COLUMN:
+                        del w[0]
+                    if w[-1] is SqlKeyword.FIRST:
+                        del w[-1:]
+                    elif w[-2] is SqlKeyword.AFTER:
+                        del w[-2:]
+                    self.rewrite_TABLE_def(w, e)
+                    if e:
+                        if d:
+                            d.append(SqlName(b','))
+                        d.append(i)
+                        d.extend(e)
+                elif i is SqlKeyword.DROP:
+                    if d:
+                        d.append(SqlName(b','))
+                    d.append(i)
+                    d.extend(w)
+                elif i in (SqlKeyword.ENABLE, SqlKeyword.DISABLE):
+                    pass
+                else:
+                    raise NotImplementedError
+            ret.extend(d)
+
+        return ret.__sql__()
+
+    def CREATE(self, query, lex):
+        ret = lex.__class__((lex.pop(0), ))
+
+        while True:
+            t = lex.pop(0)
+            if t in (SqlKeyword.TABLE, ):
+                ret.append(t)
+                break
+
+        else:
+            raise NotImplementedError
+
+        ret.append(lex.pop(0))
+        if lex[0] == b'.':
+            ret.append(lex.pop(0))
+            ret.append(lex.pop(0))
+
+        if t is SqlKeyword.TABLE:
+            for i in lex:
                 if isinstance(i, SqlParenthesis):
                     d = i.__class__()
                     ret.append(d)
                     for w in self.split_list(i, b','):
-                        if d:
-                            d.append(SqlUnknown(b','))
-                        self.rewrite_TABLE_def(w, d)
+                        e = []
+                        self.rewrite_TABLE_def(w, e)
+                        if e:
+                            if d:
+                                d.append(SqlName(b','))
+                            d.extend(e)
 
-        elif found == SqlKeyword.VIEW:
-            ret.extend(self.rewrite_SELECT(follow))
+        elif t is SqlKeyword.VIEW:
+            ret.extend(self.rewrite_SELECT(lex))
 
         return ret.__sql__()
 
@@ -246,10 +296,10 @@ class Query:
             col_type = w.pop(0)
             o = []
 
-            if col_type in (b'char', b'character') and w and w[0] == 'varying':
+            if col_type in (SqlKeyword.CHAR, SqlKeyword.CHARACTER) and w and w[0] == 'varying':
                 col_type = SqlName(b'varchar')
 
-            if col_type in (b'char', b'character', b'varchar') and w and isinstance(w[0], SqlParenthesis):
+            if col_type in (SqlKeyword.CHAR, SqlKeyword.CHARACTER, b'varchar') and w and isinstance(w[0], SqlParenthesis):
                 o.append(w.pop(0))
             if col_type == b'double' and w and w[0] != b'precision':
                 col_type = SqlUnknown(b'double precision')
@@ -272,7 +322,9 @@ class Query:
                 if i == b'auto_increment':
                     col_type = SqlName(b'serial')
                 elif i == SqlKeyword.COLLATE:
-                    w.pop(0)
+                    del w[0]
+                elif i == SqlKeyword.CHARACTER:
+                    del w[0:2]
                 elif i == b'unsigned':
                     pass
                 else:
